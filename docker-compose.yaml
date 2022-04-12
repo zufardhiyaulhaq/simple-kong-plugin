@@ -1,0 +1,51 @@
+version: "2"
+services:
+  kong:
+    expose:
+      - "8000"
+      - "8443"
+      - "8001"
+      - "8444"
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8001:8001"
+      - "8444:8444"
+    restart: always
+    environment:
+      KONG_ADMIN_LISTEN: 0.0.0.0:8001, 0.0.0.0:8444 ssl
+      KONG_DATABASE: "off"
+      KONG_DECLARATIVE_CONFIG: /usr/local/kong/declarative/kong.yaml
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_LUA_PACKAGE_PATH: /usr/local/?.lua;;
+      KONG_PLUGINS: bundled,simple-kong-plugin
+    build: .
+    volumes:
+      - ./configuration:/usr/local/kong/declarative
+      - ./kong/plugins/simple-kong-plugin:/usr/local/kong/plugins/simple-kong-plugin
+  echo-grpc-client:
+    expose:
+      - "5000"
+      - "8080"
+    ports:
+      - "8080:8080"
+      - "5000:5000"
+    restart: always
+    environment:
+      ECHO_PORT: 5000
+      HTTP_PORT: 8080
+      GRPC_SERVER_HOST: echo-grpc-server
+      GRPC_SERVER_PORT: 8081
+    image: zufardhiyaulhaq/echo-grpc-client
+  echo-grpc-server:
+    expose:
+      - "8081"
+    ports:
+      - "8081:8081"
+    restart: always
+    environment:
+      GRPC_SERVER_PORT: 8081
+    image: zufardhiyaulhaq/echo-grpc-server

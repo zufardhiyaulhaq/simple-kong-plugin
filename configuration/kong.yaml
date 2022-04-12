@@ -1,0 +1,52 @@
+_format_version: "2.1"
+_transform: true
+
+services:
+ - name: echo-grpc-service
+   host: "echo-grpc-service-upstream"
+   port: 8080
+   path: /grpc/
+   routes:
+    - name: echo-grpc-service-route
+      paths:
+      - /echo/grpc/
+
+upstreams:
+- name: echo-grpc-service-upstream
+  healthchecks:
+    active:
+      type: http
+      concurrency: 10
+      unhealthy:
+        interval: 1
+        tcp_failures: 3
+        http_statuses:
+        - 429
+        - 404
+        - 500
+        - 501
+        - 502
+        - 503
+        - 504
+        - 505
+        http_failures: 3
+        timeouts: 1
+      healthy:
+        http_statuses:
+        - 200
+        - 302
+        interval: 1
+        successes: 1
+      http_path: "/grpc/healthz"
+      timeout: 1
+
+targets:
+- upstream: echo-grpc-service-upstream
+  target: echo-grpc-client:8080
+  weight: 100
+
+plugins:
+- name: syslog
+  service: echo-grpc-service
+- name: simple-kong-plugin
+  service: echo-grpc-service

@@ -1,18 +1,22 @@
 _format_version: "2.1"
 _transform: true
 
+routes:
+  - name: echo-grpc-route
+    service: echo-grpc-service
+    paths:
+    - /echo/grpc/
+
 services:
  - name: echo-grpc-service
-   host: "echo-grpc-service-upstream"
+   host: "echo-grpc-upstream"
    port: 8080
    path: /grpc/
-   routes:
-    - name: echo-grpc-service-route
-      paths:
-      - /echo/grpc/
+   plugins:
+    - name: simple-kong-plugin
 
 upstreams:
-- name: echo-grpc-service-upstream
+- name: echo-grpc-upstream
   healthchecks:
     active:
       type: http
@@ -41,12 +45,10 @@ upstreams:
       timeout: 1
 
 targets:
-- upstream: echo-grpc-service-upstream
+- upstream: echo-grpc-upstream
   target: echo-grpc-client:8080
   weight: 100
 
 plugins:
 - name: syslog
-  service: echo-grpc-service
-- name: simple-kong-plugin
   service: echo-grpc-service

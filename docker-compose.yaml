@@ -22,9 +22,14 @@ services:
       KONG_ADMIN_ERROR_LOG: /dev/stderr
       KONG_LUA_PACKAGE_PATH: /usr/local/?.lua;;
       KONG_PLUGINS: bundled,simple-kong-plugin
+      SIMPLE_KONG_PLUGIN_OWNER: foundation
+      SIMPLE_KONG_PLUGIN_COMPANY: gtf
+      KONG_STREAM_LISTEN: "off"
+      KONG_NGINX_DAEMON: "off"
     build: .
     volumes:
-      - ./configuration:/usr/local/kong/declarative
+      - ./configuration/api:/usr/local/kong/declarative
+      - ./configuration/system/kong.conf:/etc/kong/kong.conf
       - ./kong/plugins/simple-kong-plugin:/usr/local/kong/plugins/simple-kong-plugin
   echo-grpc-client:
     expose:
